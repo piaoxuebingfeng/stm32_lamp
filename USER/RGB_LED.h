@@ -13,3 +13,4 @@ void send_8G_8R_8B();
 void send_4G_4R_4B_1();
 void send_4G_4R_4B_2();
 void send_semicircle();
+void send_circle();

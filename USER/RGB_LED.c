@@ -84,7 +84,31 @@ void sendi_GRB(u8 Green,u8 Red,u8 Blue,u8 j)
 		reset();
 	LED1=0;
 }
-
+void send_circle()
+{
+	u8 i,j,k;
+	for(k=5;k>0;k--)
+	{
+		for(i=0;i<17;i++)
+		{
+			for(j=0;j<=i;j++)
+			{
+				send_GRB(0,0,0);
+			}
+			send_GRB(2,2,2);
+			send_GRB(5,5,5);
+			send_GRB(10,10,10);
+			send_GRB(15,15,15);
+			send_GRB(20,20,20);
+			send_GRB(25,25,25);
+			reset();
+			LED1=1;
+			delay_ms(100);
+		}
+			send24_GRB(0,0,0);
+			delay_ms(1000);
+	}
+}
 /*
  *  灯环半圆跑马灯
 */
@@ -133,6 +157,7 @@ void double_GRB()
 void send24_GRB(u8 Green,u8 Red,u8 Blue)
 {
 	u8 i;
+	LED1=0;
 	for(i=0;i<24;i++)
 		{
 			send_GRB(Green,Red,Blue);
@@ -246,8 +271,9 @@ void send_bit1()//发送1   1.264us   高电平占空比58.2%
 void reset()//复位  周期52us  高电平占空比 1.3%
 {
 	u8 res_i;
+	LED1=0;
 	LED1=1;
 	for(res_i=0;res_i<195;res_i++)
-		LED0=0;
+		//LED1=0; //??????
 	LED1=1;
 }

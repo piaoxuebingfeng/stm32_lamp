@@ -7,7 +7,8 @@
 #include "adc.h"
 #include "pwm.h"
 #include "timer.h"
-
+#include <stdio.h>
+#include <string.h>
 extern u8 wifi_flag;
 static u8 color_i;//修改颜色的值
 u8 white_flag;
@@ -26,31 +27,34 @@ void delay_white();
 void Uart2_process();
 void Uart1_process();
 
+void adc_light_process();
+static u8 light_test_flag = 1;
 int main(void)
  {	
 	u8 t,sendi;
 	//u16  V_timers=0;     //电量检测时间间隔  10s检测一次
 	u16 times=0; 
-	 u8 i;
+	u8 i,j;
 	delay_init();	    	 //延时函数初始化
- 	//Adc_Init();		  		//ADC初始化	 	
+ 	Adc_Init();		  		//ADC初始化	 	
 	LED_Init();		  	 //初始化与LED连接的硬件接口
-	LED_shanshuo();
 	KEY_Init();	 
 	NVIC_Configuration();// 设置中断优先级分组
-	TIM3_Int_Init(4999,7199);
+  //TIM3_Int_Init(4999,7199);
 	//TIM4_Int_Init(4999,7199);
 	 // 72000000/7200=10000Hz   10000/5000=2Hz  为0.5s     10Khz的计数频率，计数到5000为500ms  
 	uart1_init(9600);	 //串口初始化为9600
 	uart2_init(9600);
-	uart4_init(9600);	 //串口初始化为9600 
+	//double_GRB();
 	send24_GRB(0,0,0);
-	delay_ms(2000);
-	send24_GRB(5,5,5);
-	sendi_GRB(5,5,5,48);
-	double_GRB();
-
-
+	delay_ms(1000);
+	delay_ms(1000);
+	send_semicircle();
+	send24_GRB(0,0,0);
+	delay_ms(5);
+	
+	send_circle();
+	
 	send_semicircle();
 	USART_ClearFlag(USART2, USART_FLAG_TC);
 	USART_printf(USART2,"AT+CIPMUX=1\r\n");
@@ -70,7 +74,24 @@ int main(void)
 		//ADC_POWER();	//电量检测函数
 		Uart2_process();
 		Uart1_process();
+		if(light_test_flag == 1)
+			adc_light_process();
 	}
+}
+void adc_light_process()
+{
+		u16 adcx,light_intensity;
+		float adc_f;
+		u16 color_light;
+		adcx=Get_Adc_Average(ADC_Channel_1,30);
+		adc_f=(float)adcx*3.3/4096;
+		printf("ADC:%.2f\r\n",adc_f);
+		light_intensity=(u16)(adc_f*100);
+		if(light_intensity <=200)
+				color_light=0;
+		else
+				color_light=light_intensity-200;	
+		send24_GRB(color_light,color_light,color_light);
 }
 void Uart1_process()
 {
@@ -120,6 +141,7 @@ void Uart1_process()
 
 	if((USART1_RX_BUF[0]=='G')&&(USART1_RX_BUF[1]=='R')&&(USART1_RX_BUF[2]=='B'))//GRB
 	{
+
 		Green=(USART1_RX_BUF[3]-0x30)*100+(USART1_RX_BUF[4]-0x30)*10+(USART1_RX_BUF[5]-0x30)*1;
 		Red=(USART1_RX_BUF[6]-0x30)*100+(USART1_RX_BUF[7]-0x30)*10+(USART1_RX_BUF[8]-0x30)*1;
 		Blue=(USART1_RX_BUF[9]-0x30)*100+(USART1_RX_BUF[10]-0x30)*10+(USART1_RX_BUF[11]-0x30)*1;
@@ -144,24 +166,21 @@ void Uart2_process()
 		len=USART2_RX_STA&0x3fff;//得到此次接收到的数据长度
 		ID=USART2_RX_BUF[4];
 		
-	//测试板子时 用的串口通信数据
-	if(USART2_RX_BUF[0]=='L')
-	{				
-		 LED3=0;
-	}
-	if(USART2_RX_BUF[0]=='l')
-	{				
-		 LED3=1;
-	}
 	if(USART2_RX_BUF[8]=='L')
 	{				
-		 LED2=0;
-			huxi_white_3();//呼吸渐暗
+		 	 send24_GRB(60,50,45);  //打开灯环
 	}
 	if(USART2_RX_BUF[8]=='l')
 	{				
-		 LED2=1;
-		huxi_white_3();
+		 send24_GRB(0,0,0);
+	}
+	if(USART2_RX_BUF[8]=='M')//对光线传感器进行控制 打开光线感应开关
+	{				
+		 	light_test_flag=1;
+	}
+	if(USART2_RX_BUF[8]=='m')//对光线传感器进行控制 关闭光线感应开关
+	{				
+		 light_test_flag=0;
 	}
 	if(USART2_RX_BUF[8]=='D')
 	{				
@@ -188,6 +207,7 @@ void Uart2_process()
 
 	if((USART2_RX_BUF[9]=='G')&&(USART2_RX_BUF[10]=='R')&&(USART2_RX_BUF[11]=='B'))//GRB
 	{
+		light_test_flag=0;
 		Green=(USART2_RX_BUF[12]-0x30)*100+(USART2_RX_BUF[13]-0x30)*10+(USART2_RX_BUF[14]-0x30)*1;
 		Red=(USART2_RX_BUF[15]-0x30)*100+(USART2_RX_BUF[16]-0x30)*10+(USART2_RX_BUF[17]-0x30)*1;
 		Blue=(USART2_RX_BUF[18]-0x30)*100+(USART2_RX_BUF[19]-0x30)*10+(USART2_RX_BUF[20]-0x30)*1;
@@ -197,6 +217,7 @@ void Uart2_process()
 		Blue=0;
 	}
 	USART2_RX_STA=0;
+	memset(USART2_RX_BUF,0,USART_REC_LEN);
 	}
 }
 void RGB_LED_shanshuo()
