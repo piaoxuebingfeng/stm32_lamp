@@ -21,7 +21,8 @@
 
 
 
-void LED_Init(void);//初始化
+void RBG_LED_Init(void);//初始化
+void STA_LED_Init(void);
 
 		 				    
 #endif

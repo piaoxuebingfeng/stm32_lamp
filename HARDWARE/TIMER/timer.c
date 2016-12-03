@@ -54,37 +54,27 @@ void TIM4_Int_Init(u16 arr,u16 psc)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;  //从优先级3级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
 	NVIC_Init(&NVIC_InitStructure);  //根据NVIC_InitStruct中指定的参数初始化外设NVIC寄存器
-	TIM_Cmd(TIM4, ENABLE);  //使能TIMx外设
+	//TIM_Cmd(TIM4, ENABLE);  //使能TIMx外设
 							 
 }
-void TIM4_IRQHandler(void)   //TIM3中断
+void TIM4_IRQHandler(void)   //TIM4中断
 {
 	static u16 delay_sec=0;
-	static u16 delay_min=0;
-	static u16 delay_hour=0;
 		if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET) //检查指定的TIM中断发生与否:TIM 中断源 
 		{
 			TIM_ClearITPendingBit(TIM4, TIM_IT_Update  );  //清除TIMx的中断待处理位:TIM 中断源 
 			delay_sec++;
 			if(delay_sec%2==0)
 			{
-			LED2=!LED2;
+				LED0=!LED0;
 			}
-			if(delay_sec==120)
+			if(delay_sec>300)
 			{
-				delay_sec=0;
-				delay_min++;
+					send24_GRB(0,0,0);
+					TIM_Cmd(TIM4, DISABLE);
 			}
-			if(delay_min==60)
-			{
-				delay_min=0;
-				delay_hour++;
-			}
-			if(delay_hour==3)//3小时初始化一次
-			{
-				delay_hour=0;
-				wifi_flag=1;
-			}
+
+			
 		}
 }
 

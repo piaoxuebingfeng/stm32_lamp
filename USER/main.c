@@ -37,15 +37,17 @@ int main(void)
 	u8 i,j;
 	delay_init();	    	 //延时函数初始化
  	Adc_Init();		  		//ADC初始化	 	
-	LED_Init();		  	 //初始化与LED连接的硬件接口
+	RBG_LED_Init();		  	 //初始化与LED连接的硬件接口
+	STA_LED_Init();
 	KEY_Init();	 
 	NVIC_Configuration();// 设置中断优先级分组
   //TIM3_Int_Init(4999,7199);
-	//TIM4_Int_Init(4999,7199);
+	TIM4_Int_Init(4999,7199);
 	 // 72000000/7200=10000Hz   10000/5000=2Hz  为0.5s     10Khz的计数频率，计数到5000为500ms  
 	uart1_init(9600);	 //串口初始化为9600
 	uart2_init(9600);
 	//double_GRB();
+	 LED0=0;
 	send24_GRB(0,0,0);
 	delay_ms(1000);
 	delay_ms(1000);
@@ -167,11 +169,17 @@ void Uart2_process()
 		ID=USART2_RX_BUF[4];
 		
 	if(USART2_RX_BUF[8]=='L')
-	{				
+	{	
+			 light_test_flag=0;
+			 delay_ms(10);
 		 	 send24_GRB(60,50,45);  //打开灯环
+			 delay_ms(10);
+			 TIM_Cmd(TIM4, ENABLE);
 	}
 	if(USART2_RX_BUF[8]=='l')
-	{				
+	{		
+			//light_test_flag=1;
+		 TIM_Cmd(TIM4, DISABLE);
 		 send24_GRB(0,0,0);
 	}
 	if(USART2_RX_BUF[8]=='M')//对光线传感器进行控制 打开光线感应开关
