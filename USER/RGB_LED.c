@@ -87,7 +87,7 @@ void sendi_GRB(u8 Green,u8 Red,u8 Blue,u8 j)
 void send_circle()
 {
 	u8 i,j,k;
-	for(k=5;k>0;k--)
+	for(k=2;k>0;k--)
 	{
 		for(i=0;i<17;i++)
 		{

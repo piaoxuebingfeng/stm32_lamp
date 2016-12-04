@@ -19,16 +19,12 @@
 //#define KEY1 PAin(15)	 
 //#define WK_UP  PAin(0)	 
  
-#define KEY_B3  GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_3)//读取按键B3
-#define KEY_B12  GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_12)//读取按键B12
-#define KEY_B13  GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_13)//读取按键B13
-#define KEY_B14  GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_14)//读取按键B14 
-#define KEY_C10  GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_1)//读取按键C10
+#define KEY_C4  GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_4)//读取按键C4
+#define KEY_C5  GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_5)//读取按键C5
  
-#define KEYB12_PRES	1		//KEYB12_PRES  
-#define KEYB13_PRES	2		//KEYB13_PRES 
-#define KEYB14_PRES	3		//KEYB14_PRES  
-#define KEYB3_PRES	4		//KEYB3_PRES 
+#define KEYC4_PRES	1		//KEYC4_PRES  
+#define KEYC5_PRES	2		//KEYC5_PRES 
+
 
 void KEY_Init(void);//IO初始化
 u8 KEY_Scan(u8 mode);  	//按键扫描函数					    

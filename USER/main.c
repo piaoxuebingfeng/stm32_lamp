@@ -13,7 +13,7 @@ extern u8 wifi_flag;
 static u8 color_i;//修改颜色的值
 u8 white_flag;
 
-void Key_press();
+
 void WIFI_AP_STA();
 void WIFI_AP_STA_yanchanghong();
 void ADC_POWER();
@@ -26,7 +26,7 @@ void huxi_color();
 void delay_white();
 void Uart2_process();
 void Uart1_process();
-
+u8 smart_config_key();
 void adc_light_process();
 static u8 light_test_flag = 1;
 int main(void)
@@ -34,7 +34,8 @@ int main(void)
 	u8 t,sendi;
 	//u16  V_timers=0;     //电量检测时间间隔  10s检测一次
 	u16 times=0; 
-	u8 i,j;
+	u8 i,j ;
+	u8 key_value;
 	delay_init();	    	 //延时函数初始化
  	Adc_Init();		  		//ADC初始化	 	
 	RBG_LED_Init();		  	 //初始化与LED连接的硬件接口
@@ -50,8 +51,6 @@ int main(void)
 	 LED0=0;
 	send24_GRB(0,0,0);
 	delay_ms(1000);
-	delay_ms(1000);
-	send_semicircle();
 	send24_GRB(0,0,0);
 	delay_ms(5);
 	
@@ -69,17 +68,43 @@ int main(void)
 	send24_GRB(5,5,5);
 	delay_ms(500);
 	sendi_GRB(0,0,0,48);
-
+	light_test_flag=0;
 	while(1)
 	{
-		Key_press();
 		//ADC_POWER();	//电量检测函数
 		Uart2_process();
 		Uart1_process();
+		key_value=KEY_Scan(0);
+		if(key_value==1)
+			send24_GRB(0,0,0);
+		else if(key_value == 2)
+			send24_GRB(0,255,0);
+		smart_config_key();
 		if(light_test_flag == 1)
 			adc_light_process();
 	}
 }
+ 
+//按键长按
+u8 smart_config_key()
+{
+	u16 i;
+	if(KEY_C4==0)
+	{
+		while(KEY_C4==0)
+		{
+			i++;
+			delay_ms(100);
+			if(i>15)
+			{
+				USART_ClearFlag(USART2, USART_FLAG_TC);
+				USART_printf(USART2,"AT+CWSMARTSTART=1\r\n");
+				send24_GRB(0,255,255);
+			}
+		}
+	}
+}
+
 void adc_light_process()
 {
 		u16 adcx,light_intensity;
@@ -694,146 +719,4 @@ void WIFI_AP_STA_yanchanghong()
 }
 
 
-void Key_press()
-{
-	//2015 0607  加入了按键功能
-	if(KEY_C10==0)
-	{
-		delay_ms(30);
-		if(KEY_C10==0)
-		{
-				send24_GRB(75,0,0);
-			USART_ClearFlag(USART2, USART_FLAG_TC);
-			USART_printf(USART2,"AT+CWSMARTSTART=1\r\n");
-		}
-	}
-	if(KEY_B12==0)
-	{
-		delay_ms(30);
-		if(KEY_B12==0)
-		{
-			color_i=7;
-			switch(color_i)
-			{
-			case 7://white
-				send24_GRB(255,255,255);
-				break;
-			}
-		}
-	}
-	if(KEY_B13==0)
-	{
-		delay_ms(30);
-		if(KEY_B13==0)
-		{
-			color_i=8;
-			switch(color_i)
-			{
-				case 8://black
-				send24_GRB(0,0,0);
-				break;
-			}
-		}
-	}
-	if(KEY_B14==0)
-	{
-		delay_ms(300);
-		if(KEY_B14==0)
-		{
-			color_i++;
-			if(color_i>=10)
-				color_i=0;
-			switch(color_i)
-			{
-				case 0: //red
-					send24_GRB(0,255,0);
-					break;
-				case 1://green
-					send24_GRB(255,0,0);
-					break;
-				case 2://blue
-					send24_GRB(0,0,255);
-					break;
-				case 3://white
-					send24_GRB(255,255,255);
-					break;
-				case 4://8G8R8B
-					send_8G_8R_8B();
-					break;
-				case 5://4G4R4B
-					send_4G_4R_4B_1();
-					break;
-				case 6://4G4R4B
-					send_4G_4R_4B_2();
-					break;
-				case 7://white
-					send24_GRB(125,125,225);
-					break;
-				case 8://black
-					send24_GRB(0,0,0);
-					break;
-				case 9://huxi
-				while(1)	//呼吸死循环
-				{
-					u8 i;
-					for(i=0;i<=240;i+=5)
-					{
-						send24_GRB(i,i,i);
-						delay_ms(20);
-						if(KEY_B14==0)
-						{
-							delay_ms(500);
-							if(KEY_B14==0)
-							{
-								break;
-							}
-						}
-					}
-					delay_ms(2000);
-					for(i=240;i>=5;i-=5)
-					{
-						send24_GRB(i,i,i);
-						delay_ms(20);
-						if(KEY_B14==0)
-						{
-							delay_ms(500);
-							if(KEY_B14==0)
-							{
-								break;
-							}
-						}
-					}
-					send24_GRB(0,0,0);
-					delay_ms(2000);
-					if(KEY_B14==0)
-					{
-						delay_ms(500);
-						if(KEY_B14==0)
-						{
-							color_i++;
-							break;
-						}
-					}
-				}
-					break;
-//				case 10://huxi 2
-//				while(1)	
-//				{
-//					huxo_white_2();
-//					if(KEY_B14==0)
-//					{
-//						delay_ms(500);
-//						if(KEY_B14==0)
-//						{
-//							color_i++;
-//							break;
-//						}
-//					}
-//				}
-//					break;
-				
-			}
-		}
-	}
-	
-}
+
