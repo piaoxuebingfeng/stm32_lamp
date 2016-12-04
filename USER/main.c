@@ -175,11 +175,20 @@ void Uart2_process()
 		 	 send24_GRB(60,50,45);  //打开灯环
 			 delay_ms(10);
 			 TIM_Cmd(TIM4, ENABLE);
+					TIM_ITConfig(  //使能或者失能指定的TIM中断
+					TIM4, //TIM4
+					TIM_IT_Update ,
+					ENABLE
+				);
 	}
 	if(USART2_RX_BUF[8]=='l')
 	{		
 			//light_test_flag=1;
-		 TIM_Cmd(TIM4, DISABLE);
+		TIM_ITConfig(  //使能或者失能指定的TIM中断
+		TIM4, //TIM4
+		TIM_IT_Update ,
+		DISABLE
+		);
 		 send24_GRB(0,0,0);
 	}
 	if(USART2_RX_BUF[8]=='M')//对光线传感器进行控制 打开光线感应开关

@@ -70,8 +70,14 @@ void TIM4_IRQHandler(void)   //TIM4中断
 			}
 			if(delay_sec>300)
 			{
+				  delay_sec=0;
 					send24_GRB(0,0,0);
-					TIM_Cmd(TIM4, DISABLE);
+				
+					TIM_ITConfig(  //使能或者失能指定的TIM中断
+					TIM4,
+					TIM_IT_Update ,
+					DISABLE
+			);
 			}
 
 			
