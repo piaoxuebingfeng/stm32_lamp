@@ -7,6 +7,8 @@
 #include "adc.h"
 #include "pwm.h"
 #include "timer.h"
+#include "I2C.h"
+#include "SI7021.h"
 #include <stdio.h>
 #include <string.h>
 extern u8 wifi_flag;
@@ -28,19 +30,22 @@ void Uart2_process();
 void Uart1_process();
 u8 smart_config_key();
 void adc_light_process();
+void print_temp_humi();
 static u8 light_test_flag = 1;
 int main(void)
  {	
 	u8 t,sendi;
 	//u16  V_timers=0;     //电量检测时间间隔  10s检测一次
 	u16 times=0; 
+
 	u8 i,j ;
 	u8 key_value;
 	delay_init();	    	 //延时函数初始化
  	Adc_Init();		  		//ADC初始化	 	
 	RBG_LED_Init();		  	 //初始化与LED连接的硬件接口
 	STA_LED_Init();
-	KEY_Init();	 
+	KEY_Init();
+	I2C_GPIO_Config();	 
 	NVIC_Configuration();// 设置中断优先级分组
   //TIM3_Int_Init(4999,7199);
 	TIM4_Int_Init(4999,7199);
@@ -49,6 +54,7 @@ int main(void)
 	uart2_init(9600);
 	//double_GRB();
 	 LED0=0;
+	print_temp_humi();
 	send24_GRB(0,0,0);
 	delay_ms(1000);
 	send24_GRB(0,0,0);
@@ -69,6 +75,7 @@ int main(void)
 	delay_ms(500);
 	sendi_GRB(0,0,0,48);
 	light_test_flag=0;
+
 	while(1)
 	{
 		//ADC_POWER();	//电量检测函数
@@ -82,9 +89,22 @@ int main(void)
 		smart_config_key();
 		if(light_test_flag == 1)
 			adc_light_process();
+		//print_temp_humi();
 	}
 }
- 
+void print_temp_humi()
+{
+	u16 temp,humi;
+	//新增SI7021系列温湿度传感器采集
+	if(SI7021_Read( &temp, &humi ))
+	{
+		printf( "温度：%.1f 湿度：%.1f%%\r\n", temp / 10.0, humi/ 10.0 );
+	}
+	else
+	{
+		 printf( "read SI7021 ERROR\r\n");
+	}
+}
 //按键长按
 u8 smart_config_key()
 {

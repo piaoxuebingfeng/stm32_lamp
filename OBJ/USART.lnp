@@ -8,6 +8,8 @@
 "..\obj\adc.o"
 "..\obj\pwm.o"
 "..\obj\timer.o"
+"..\obj\i2c.o"
+"..\obj\si7021.o"
 "..\obj\delay.o"
 "..\obj\sys.o"
 "..\obj\usart.o"

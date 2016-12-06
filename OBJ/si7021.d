@@ -1,0 +1,17 @@
+..\obj\si7021.o: ..\HARDWARE\SI7021\SI7021.c
+..\obj\si7021.o: ..\HARDWARE\SI7021\SI7021.h
+..\obj\si7021.o: ..\USER\stm32f10x.h
+..\obj\si7021.o: ..\CORE\core_cm3.h
+..\obj\si7021.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+..\obj\si7021.o: ..\USER\system_stm32f10x.h
+..\obj\si7021.o: ..\USER\stm32f10x_conf.h
+..\obj\si7021.o: ..\STM32F10x_FWLib\inc\stm32f10x_adc.h
+..\obj\si7021.o: ..\USER\stm32f10x.h
+..\obj\si7021.o: ..\STM32F10x_FWLib\inc\stm32f10x_gpio.h
+..\obj\si7021.o: ..\STM32F10x_FWLib\inc\stm32f10x_rcc.h
+..\obj\si7021.o: ..\STM32F10x_FWLib\inc\stm32f10x_tim.h
+..\obj\si7021.o: ..\STM32F10x_FWLib\inc\stm32f10x_usart.h
+..\obj\si7021.o: ..\STM32F10x_FWLib\inc\misc.h
+..\obj\si7021.o: ..\HARDWARE\SI7021\I2C.h
+..\obj\si7021.o: ..\SYSTEM\delay\Delay.h
+..\obj\si7021.o: ..\SYSTEM\sys\sys.h
