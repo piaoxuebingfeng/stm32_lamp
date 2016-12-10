@@ -40,6 +40,7 @@ int main(void)
 
 	u8 i,j ;
 	u8 key_value;
+	SCB->VTOR = FLASH_BASE | 0x10000; /* Vector Table Relocation in Internal FLASH. */
 	delay_init();	    	 //延时函数初始化
  	Adc_Init();		  		//ADC初始化	 	
 	RBG_LED_Init();		  	 //初始化与LED连接的硬件接口
@@ -71,7 +72,6 @@ int main(void)
 	//send_semicircle();
 	//USART_ClearFlag(USART2, USART_FLAG_TC);
   //USART_printf(USART2,"AT+CWSMARTSTART=1\r\n");
-	send24_GRB(5,5,5);
 	delay_ms(500);
 	sendi_GRB(0,0,0,48);
 	light_test_flag=0;
