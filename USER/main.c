@@ -11,6 +11,8 @@
 #include "SI7021.h"
 #include <stdio.h>
 #include <string.h>
+#include "esp8266.h"
+
 extern u8 wifi_flag;
 static u8 color_i;//修改颜色的值
 u8 white_flag;
@@ -40,7 +42,7 @@ int main(void)
 
 	u8 i,j ;
 	u8 key_value;
-	SCB->VTOR = FLASH_BASE | 0x10000; /* Vector Table Relocation in Internal FLASH. */
+	//SCB->VTOR = FLASH_BASE | 0x10000; /* Vector Table Relocation in Internal FLASH. */
 	delay_init();	    	 //延时函数初始化
  	Adc_Init();		  		//ADC初始化	 	
 	RBG_LED_Init();		  	 //初始化与LED连接的硬件接口
@@ -55,6 +57,9 @@ int main(void)
 	uart2_init(9600);
 	//double_GRB();
 	 LED0=0;
+	 
+	//ESP8266_Init();
+	
 	print_temp_humi();
 	send24_GRB(0,0,0);
 	delay_ms(1000);
@@ -64,15 +69,25 @@ int main(void)
 	send_circle();
 	
 	send_semicircle();
+	
+	USART_ClearFlag(USART2, USART_FLAG_TC);
+	USART_printf(USART2,"AT\r\n");
+	send_semicircle();
+	delay_ms(500);
+	USART_ClearFlag(USART2, USART_FLAG_TC);
+	USART_printf(USART2,"AT+RST\r\n");
+	send_semicircle();
+	delay_ms(500);
 	USART_ClearFlag(USART2, USART_FLAG_TC);
 	USART_printf(USART2,"AT+CIPMUX=1\r\n");
 	send_semicircle();
 	USART_ClearFlag(USART2, USART_FLAG_TC);
 	USART_printf(USART2,"AT+CIPSERVER=1,8080\r\n");
+	
 	//send_semicircle();
 	//USART_ClearFlag(USART2, USART_FLAG_TC);
   //USART_printf(USART2,"AT+CWSMARTSTART=1\r\n");
-	delay_ms(500);
+	//delay_ms(500);
 	sendi_GRB(0,0,0,48);
 	light_test_flag=0;
 
@@ -212,7 +227,9 @@ void Uart2_process()
 	{
 		len=USART2_RX_STA&0x3fff;//得到此次接收到的数据长度
 		ID=USART2_RX_BUF[4];
-		
+		USART_ClearFlag(USART1, USART_FLAG_TC);
+		USART_printf(USART1,"%s",USART2_RX_BUF);
+	
 	if(USART2_RX_BUF[8]=='L')
 	{	
 			 light_test_flag=0;

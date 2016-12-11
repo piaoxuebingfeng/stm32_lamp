@@ -552,12 +552,12 @@ ARM Macro Assembler    Page 9
               00000000 
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
-ork --depend=..\obj\startup_stm32f10x_hd.d -o..\obj\startup_stm32f10x_hd.o -IF:
-\github\stm32_lamp\USER\RTE -ID:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\CMSIS\Include
- -ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.0.4\Device\Include --predefine="__M
-ICROLIB SETA 1" --predefine="__UVISION_VERSION SETA 520" --predefine="_RTE_ SET
-A 1" --predefine="STM32F10X_HD SETA 1" --list=.\startup_stm32f10x_hd.lst ..\COR
-E\startup_stm32f10x_hd.s
+ork --depend=..\obj\startup_stm32f10x_hd.d -o..\obj\startup_stm32f10x_hd.o -IE:
+\github\stm32_lamp\USER\RTE -ID:\MDK5\ARM\PACK\ARM\CMSIS\4.5.0\CMSIS\Include -I
+D:\MDK5\ARM\PACK\Keil\STM32F1xx_DFP\1.0.4\Device\Include --predefine="__MICROLI
+B SETA 1" --predefine="__UVISION_VERSION SETA 520" --predefine="_RTE_ SETA 1" -
+-predefine="STM32F10X_HD SETA 1" --list=.\startup_stm32f10x_hd.lst ..\CORE\star
+tup_stm32f10x_hd.s
 
 
 

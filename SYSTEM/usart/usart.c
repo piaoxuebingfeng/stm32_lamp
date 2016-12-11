@@ -230,8 +230,10 @@ void USART2_IRQHandler(void)                	//串口2中断服务程序
 						if(PreFlag==0)//接收到了0x0d
 							{
 								if(Res=='+')
-								{PreFlag=1;
-								 USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;}
+								{
+									PreFlag=1;
+								  USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;
+								}
 							}
 						else
 							{
@@ -308,7 +310,7 @@ void uart4_init(u32 bound){
 }
 #if EN_UART4_RX   //如果使能了接收
 void UART4_IRQHandler(void)                	//串口1中断服务程序
-	{
+{
 		u8 Res;
 		static u8 PreFlag;
 		if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
