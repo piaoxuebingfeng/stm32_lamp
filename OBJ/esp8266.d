@@ -3,7 +3,7 @@
 ..\obj\esp8266.o: ..\SYSTEM\sys\sys.h
 ..\obj\esp8266.o: ..\USER\stm32f10x.h
 ..\obj\esp8266.o: ..\CORE\core_cm3.h
-..\obj\esp8266.o: D:\MDK5\ARM\ARMCC\Bin\..\include\stdint.h
+..\obj\esp8266.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 ..\obj\esp8266.o: ..\USER\system_stm32f10x.h
 ..\obj\esp8266.o: ..\USER\stm32f10x_conf.h
 ..\obj\esp8266.o: ..\STM32F10x_FWLib\inc\stm32f10x_adc.h
@@ -15,7 +15,7 @@
 ..\obj\esp8266.o: ..\STM32F10x_FWLib\inc\misc.h
 ..\obj\esp8266.o: ..\SYSTEM\delay\delay.h
 ..\obj\esp8266.o: ..\SYSTEM\usart\usart.h
-..\obj\esp8266.o: D:\MDK5\ARM\ARMCC\Bin\..\include\stdio.h
+..\obj\esp8266.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 ..\obj\esp8266.o: ..\USER\RGB_LED.h
 ..\obj\esp8266.o: ..\USER\key.h
 ..\obj\esp8266.o: ..\HARDWARE\ADC\adc.h
@@ -23,5 +23,5 @@
 ..\obj\esp8266.o: ..\HARDWARE\TIMER\timer.h
 ..\obj\esp8266.o: ..\HARDWARE\SI7021\I2C.h
 ..\obj\esp8266.o: ..\HARDWARE\SI7021\SI7021.h
-..\obj\esp8266.o: D:\MDK5\ARM\ARMCC\Bin\..\include\string.h
+..\obj\esp8266.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 ..\obj\esp8266.o: ..\Network\esp8266.h

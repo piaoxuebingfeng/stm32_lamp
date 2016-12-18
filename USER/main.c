@@ -53,8 +53,8 @@ int main(void)
   //TIM3_Int_Init(4999,7199);
 	TIM4_Int_Init(4999,7199);
 	 // 72000000/7200=10000Hz   10000/5000=2Hz  为0.5s     10Khz的计数频率，计数到5000为500ms  
-	uart1_init(9600);	 //串口初始化为9600
-	uart2_init(9600);
+	uart1_init(115200);	 //串口初始化为115200
+	uart2_init(115200);
 	//double_GRB();
 	 LED0=0;
 	 
@@ -70,14 +70,14 @@ int main(void)
 	
 	send_semicircle();
 	
-	USART_ClearFlag(USART2, USART_FLAG_TC);
-	USART_printf(USART2,"AT\r\n");
-	send_semicircle();
-	delay_ms(500);
-	USART_ClearFlag(USART2, USART_FLAG_TC);
-	USART_printf(USART2,"AT+RST\r\n");
-	send_semicircle();
-	delay_ms(500);
+//	USART_ClearFlag(USART2, USART_FLAG_TC);
+//	USART_printf(USART2,"AT\r\n");
+//	send_semicircle();
+//	delay_ms(500);
+//	USART_ClearFlag(USART2, USART_FLAG_TC);
+//	USART_printf(USART2,"AT+RST\r\n");
+//	send_semicircle();
+//	delay_ms(500);
 	USART_ClearFlag(USART2, USART_FLAG_TC);
 	USART_printf(USART2,"AT+CIPMUX=1\r\n");
 	send_semicircle();
