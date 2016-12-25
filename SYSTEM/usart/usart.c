@@ -1,6 +1,8 @@
 #include "sys.h"
 #include "usart.h"	 
 #include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_UCOS
@@ -209,49 +211,94 @@ void uart2_init(u32 bound){
 
 
 #if EN_USART2_RX   //如果使能了接收
-void USART2_IRQHandler(void)                	//串口2中断服务程序
+//void USART2_IRQHandler(void)                	//串口2中断服务程序
+//{
+//	u8 Res;
+//	static u8 PreFlag;
+//	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
+//	{
+//			Res =USART_ReceiveData(USART2);//(USART2->DR);	//读取接收到的数据	
+//			if((USART2_RX_STA&0x8000)==0)//接收未完成
+//				{
+//						if(PreFlag==0)
+//						{
+//								if(Res=='+')
+//								{
+//									PreFlag=1;
+//								  USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;
+//								}
+//						}
+//						else
+//							{
+//								if(USART2_RX_STA&0x4000)//接收到了0x0d
+//									{
+//									if(Res!=0x0a)USART2_RX_STA=0;//接收错误,重新开始
+//									else {PreFlag=0;USART2_RX_STA|=0x8000;}	//接收完成了
+//										
+//									}
+//								else //还没收到0X0D
+//								{	
+//									if(Res==0x0d)USART2_RX_STA|=0x4000;
+//									else
+//									{
+//											
+//										  USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;
+//										  USART2_RX_STA++;
+//										if(USART2_RX_STA>(USART_REC_LEN-1))USART2_RX_STA=0;//接收数据错误,重新开始接收	  
+//									}		 
+//								}					
+//							}   		 
+//				}
+//		}
+//}
+void USART2_IRQHandler(void)
 {
 	u8 Res;
-	static u8 PreFlag;
-#ifdef OS_TICKS_PER_SEC	 	//如果时钟节拍数定义了,说明要使用ucosII了.
-	OSIntEnter();    
-#endif
+	u8 len;
+	u8 *ptr=NULL;
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
 	{
-			Res =USART_ReceiveData(USART2);//(USART2->DR);	//读取接收到的数据	
-			if((USART2_RX_STA&0x8000)==0)//接收未完成
-				{
-						if(PreFlag==0)
-						{
-								if(Res=='+')
-								{
-									PreFlag=1;
-								  USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;
-								}
-						}
-						else
-							{
-								if(USART2_RX_STA&0x4000)//接收到了0x0d
-									{
-									if(Res!=0x0a)USART2_RX_STA=0;//接收错误,重新开始
-									else {PreFlag=0;USART2_RX_STA|=0x8000;}	//接收完成了
-										
-									}
-								else //还没收到0X0D
-								{	
-									if(Res==0x0d)USART2_RX_STA|=0x4000;
-									else
-									{
-											
-										  USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;
-										  USART2_RX_STA++;
-										if(USART2_RX_STA>(USART_REC_LEN-1))USART2_RX_STA=0;//接收数据错误,重新开始接收	  
-									}		 
-								}					
-							}   		 
-				}
+		Res =USART_ReceiveData(USART2);//(USART2->DR);	//读取接收到的数据	
+		if((USART2_RX_STA&0x8000)==0)//接收未完成
+		{
+			if(USART2_RX_STA&0x4000)//接收到了0x0d
+			{
+			if(Res!=0x0a)USART2_RX_STA=0;//接收错误,重新开始
+			else 
+			{
+				USART2_RX_STA|=0x8000;	//接收完成了
+			}
+			
+			}
+			else //还没收到0X0D
+				{	
+				if(Res==0x0d)USART2_RX_STA|=0x4000;
+				else
+					{
+						
+					  USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;
+					  USART2_RX_STA++;
+					if(USART2_RX_STA>(USART_REC_LEN-1))USART2_RX_STA=0;//接收数据错误,重新开始接收	  
+					}		 
+				} 		 
 		}
-} 
+	}
+	if(USART2_RX_STA&0x8000)
+	{
+		ptr = strchr((char *)USART2_RX_BUF,':');
+		if(ptr!=NULL)
+		{
+
+			len=USART2_RX_STA&0x3fff;
+			memcpy(control_buf,USART2_RX_BUF,len);
+			recvdata_sta=1;
+			//printf("control_buf:%s\r\n",control_buf);
+			//memset(control_buf,0,sizeof(control_buf));
+		}
+			USART2_RX_STA=0;
+			memset(USART2_RX_BUF,0,sizeof(USART2_RX_BUF));
+	}	
+}
 #endif	
 
 

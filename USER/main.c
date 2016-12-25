@@ -13,10 +13,13 @@
 #include <string.h>
 #include "esp8266.h"
 
+
+u8 control_buf[CONTROL_BUF_LEN];
+
 extern u8 wifi_flag;
+u8 recvdata_sta;
 static u8 color_i;//修改颜色的值
 u8 white_flag;
-
 
 void WIFI_AP_STA();
 void WIFI_AP_STA_yanchanghong();
@@ -32,10 +35,11 @@ void Uart2_process();
 void Uart1_process();
 u8 smart_config_key();
 void adc_light_process();
+void control_buf_process();
 void print_temp_humi();
 static u8 light_test_flag = 1;
 int main(void)
- {	
+{	
 	u8 t,sendi;
 	//u16  V_timers=0;     //电量检测时间间隔  10s检测一次
 	u16 times=0; 
@@ -89,12 +93,15 @@ int main(void)
   //USART_printf(USART2,"AT+CWSMARTSTART=1\r\n");
 	//delay_ms(500);
 	sendi_GRB(0,0,0,48);
+	delay_ms(100);
+	send24_GRB(0,0,0);
 	light_test_flag=0;
 
 	while(1)
 	{
 		//ADC_POWER();	//电量检测函数
-		Uart2_process();
+		//Uart2_process();
+		control_buf_process();
 		Uart1_process();
 		key_value=KEY_Scan(0);
 		if(key_value==1)
@@ -103,7 +110,10 @@ int main(void)
 			send24_GRB(0,255,0);
 		smart_config_key();
 		if(light_test_flag == 1)
+		{
 			adc_light_process();
+		}
+
 		//print_temp_humi();
 	}
 }
@@ -145,9 +155,9 @@ void adc_light_process()
 		u16 adcx,light_intensity;
 		float adc_f;
 		u16 color_light;
-		adcx=Get_Adc_Average(ADC_Channel_1,30);
+		adcx=Get_Adc_Average(ADC_Channel_1,10);
 		adc_f=(float)adcx*3.3/4096;
-		printf("ADC:%.2f\r\n",adc_f);
+		//printf("ADC:%.2f\r\n",adc_f);
 		light_intensity=(u16)(adc_f*100);
 		if(light_intensity <=200)
 				color_light=0;
@@ -216,6 +226,70 @@ void Uart1_process()
 	}
 } 
 
+void control_buf_process()
+{
+	u8 len;
+	u8 Red;
+	u8 Blue;	 
+	u8 Green;
+	u8 ID;
+	u8* ptr;
+	if(recvdata_sta)
+	{
+		recvdata_sta=0;
+		printf("control_buf_process:%s\r\n",control_buf);
+		ptr= strchr(control_buf,':');
+		if(ptr)
+		{
+			ptr++;
+			printf("control_buf_process:%s\r\n",ptr);
+			if(ptr[0]== 'M')//对光线传感器进行控制 打开光线感应开关
+			{				
+				light_test_flag=1;
+			}
+			if(ptr[0]== 'm')//对光线传感器进行控制 关闭光线感应开关
+			{				
+				 light_test_flag=0;
+			}
+			if( ptr[0] == 'L')
+			{
+				 light_test_flag=0;
+				 delay_ms(10);
+				 send24_GRB(60,50,45);  //打开灯环
+				 delay_ms(10);
+				 TIM_Cmd(TIM4, ENABLE);
+				TIM_ITConfig(  //使能或者失能指定的TIM中断
+				TIM4, //TIM4
+				TIM_IT_Update ,
+				ENABLE
+				);
+			}
+			if( ptr[0] == 'l')
+			{
+				//light_test_flag=1;
+				TIM_ITConfig(  //使能或者失能指定的TIM中断
+				TIM4, //TIM4
+				TIM_IT_Update,
+				DISABLE
+				);
+				send24_GRB(0,0,0);
+			}
+			if((ptr[0]=='G')&&(ptr[1]=='R')&&(ptr[2]=='B'))//GRB
+			{
+				light_test_flag=0;
+				Green=(ptr[3]-0x30)*100+(ptr[4]-0x30)*10+(ptr[5]-0x30)*1;
+				Red=(ptr[6]-0x30)*100+(ptr[7]-0x30)*10+(ptr[8]-0x30)*1;
+				Blue=(ptr[9]-0x30)*100+(ptr[10]-0x30)*10+(ptr[11]-0x30)*1;
+				send24_GRB(Green,Red,Blue);
+				Green=0;
+				Red=0;
+				Blue=0;
+			}
+		}
+		memset(control_buf,0,sizeof(control_buf));
+	}
+
+}
 void Uart2_process()
 {
 	u8 len;
@@ -223,80 +297,63 @@ void Uart2_process()
 	u8 Blue;	 
 	u8 Green;
 	u8 ID;
+	u8 *ptr;
 	if(USART2_RX_STA&0x8000)
 	{
 		len=USART2_RX_STA&0x3fff;//得到此次接收到的数据长度
-		ID=USART2_RX_BUF[4];
-		USART_ClearFlag(USART1, USART_FLAG_TC);
-		USART_printf(USART1,"%s",USART2_RX_BUF);
-	
-	if(USART2_RX_BUF[8]=='L')
-	{	
-			 light_test_flag=0;
-			 delay_ms(10);
-		 	 send24_GRB(60,50,45);  //打开灯环
-			 delay_ms(10);
-			 TIM_Cmd(TIM4, ENABLE);
-					TIM_ITConfig(  //使能或者失能指定的TIM中断
-					TIM4, //TIM4
-					TIM_IT_Update ,
-					ENABLE
-				);
-	}
-	if(USART2_RX_BUF[8]=='l')
-	{		
-			//light_test_flag=1;
-		TIM_ITConfig(  //使能或者失能指定的TIM中断
-		TIM4, //TIM4
-		TIM_IT_Update ,
-		DISABLE
-		);
-		 send24_GRB(0,0,0);
-	}
-	if(USART2_RX_BUF[8]=='M')//对光线传感器进行控制 打开光线感应开关
-	{				
-		 	light_test_flag=1;
-	}
-	if(USART2_RX_BUF[8]=='m')//对光线传感器进行控制 关闭光线感应开关
-	{				
-		 light_test_flag=0;
-	}
-	if(USART2_RX_BUF[8]=='D')
-	{				
-		 LED3=0;
-		send24_GRB(255,255,255);
-		TIM_ITConfig(  //使能或者失能指定的TIM中断
-		TIM3, //TIM3
-		TIM_IT_Update ,
-		ENABLE  //使能
-		);
-		//delay_white();
-			
-	}
-	if(USART2_RX_BUF[8]=='d')
-	{				
-		 LED3=1;
-//		TIM_ITConfig(  //使能或者失能指定的TIM中断
-//		TIM3, //TIM3
-//		TIM_IT_Update ,
-//		DISABLE  //使能
-//		);
-		//delay_white();
-	}
 
-	if((USART2_RX_BUF[9]=='G')&&(USART2_RX_BUF[10]=='R')&&(USART2_RX_BUF[11]=='B'))//GRB
-	{
-		light_test_flag=0;
-		Green=(USART2_RX_BUF[12]-0x30)*100+(USART2_RX_BUF[13]-0x30)*10+(USART2_RX_BUF[14]-0x30)*1;
-		Red=(USART2_RX_BUF[15]-0x30)*100+(USART2_RX_BUF[16]-0x30)*10+(USART2_RX_BUF[17]-0x30)*1;
-		Blue=(USART2_RX_BUF[18]-0x30)*100+(USART2_RX_BUF[19]-0x30)*10+(USART2_RX_BUF[20]-0x30)*1;
-		send24_GRB(Green,Red,Blue);
-		Green=0;
-		Red=0;
-		Blue=0;
-	}
-	USART2_RX_STA=0;
-	memset(USART2_RX_BUF,0,USART_REC_LEN);
+		ptr = strchr(USART2_RX_BUF,':');
+		//printf("%s\r\n",USART2_RX_BUF);
+		//printf("len:%d\r\n",len);
+		if(ptr)
+		{
+			ptr++;// 跳过 : 符号
+			//printf("%s\r\n",ptr);
+			if(ptr[0]== 'M')//对光线传感器进行控制 打开光线感应开关
+			{				
+				light_test_flag=1;
+			}
+			if(ptr[0]== 'm')//对光线传感器进行控制 关闭光线感应开关
+			{				
+				 light_test_flag=0;
+			}
+			if( ptr[0] == 'L')
+			{
+				 light_test_flag=0;
+				 delay_ms(10);
+				 send24_GRB(60,50,45);  //打开灯环
+				 delay_ms(10);
+				 TIM_Cmd(TIM4, ENABLE);
+				TIM_ITConfig(  //使能或者失能指定的TIM中断
+				TIM4, //TIM4
+				TIM_IT_Update ,
+				ENABLE
+				);
+			}
+			if( ptr[0] == 'l')
+			{
+				//light_test_flag=1;
+				TIM_ITConfig(  //使能或者失能指定的TIM中断
+				TIM4, //TIM4
+				TIM_IT_Update,
+				DISABLE
+				);
+				send24_GRB(0,0,0);
+			}
+			if((ptr[0]=='G')&&(ptr[1]=='R')&&(ptr[2]=='B'))//GRB
+			{
+				light_test_flag=0;
+				Green=(ptr[3]-0x30)*100+(ptr[4]-0x30)*10+(ptr[5]-0x30)*1;
+				Red=(ptr[6]-0x30)*100+(ptr[7]-0x30)*10+(ptr[8]-0x30)*1;
+				Blue=(ptr[9]-0x30)*100+(ptr[10]-0x30)*10+(ptr[11]-0x30)*1;
+				send24_GRB(Green,Red,Blue);
+				Green=0;
+				Red=0;
+				Blue=0;
+			}
+		}
+		USART2_RX_STA=0;
+		memset(USART2_RX_BUF,0,sizeof(USART2_RX_BUF));
 	}
 }
 void RGB_LED_shanshuo()
